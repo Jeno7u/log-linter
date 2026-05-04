@@ -25,8 +25,8 @@ func run(pass *analysis.Pass) (interface{}, error) {
 			// получаем имя вызываемой функции
 			funcName := getFuncName(call)
 
-			// фильтруем только логгеры
-			if !isLoggerCall(funcName) {
+			// фильтруем только нужные нам логгеры
+			if !isLoggerCall(pass, call) {
 				return true
 			}
 
@@ -64,12 +64,8 @@ func getFuncName(call *ast.CallExpr) string {
 	return ""
 }
 
-func isLoggerCall(name string) bool {
-	switch name {
-	case "Info", "Error", "Warn", "Debug":
-		return true
-	}
-	return false
+func isLoggerCall(pass *analysis.Pass, call *ast.CallExpr) bool {
+	return isSlogCall(pass, call) || isZapCall(pass, call)
 }
 
 func getString(expr ast.Expr) (string, bool) {
@@ -83,4 +79,65 @@ func getString(expr ast.Expr) (string, bool) {
 	}
 
 	return lit.Value, true
+}
+
+// проверяем, вызов ли это "log/slog"
+func isSlogCall(pass *analysis.Pass, call *ast.CallExpr) bool {
+	sel, ok := call.Fun.(*ast.SelectorExpr)
+	if !ok {
+		return false
+	}
+
+	ident, ok := sel.X.(*ast.Ident)
+	if !ok {
+		return false
+	}
+
+	obj := pass.TypesInfo.Uses[ident]
+	if obj == nil {
+		return false
+	}
+
+	pkg := obj.Pkg()
+	if pkg == nil {
+		return false
+	}
+
+	return pkg.Path() == "log/slog"
+}
+
+// проверяем, вызов ли это "go.uber.org/zap"
+func isZapCall(pass *analysis.Pass, call *ast.CallExpr) bool {
+	sel, ok := call.Fun.(*ast.SelectorExpr)
+	if !ok {
+		return false
+	}
+
+	// zap.L().Info → sel.X это CallExpr
+	innerCall, ok := sel.X.(*ast.CallExpr)
+	if !ok {
+		return false
+	}
+
+	innerSel, ok := innerCall.Fun.(*ast.SelectorExpr)
+	if !ok {
+		return false
+	}
+
+	ident, ok := innerSel.X.(*ast.Ident)
+	if !ok {
+		return false
+	}
+
+	obj := pass.TypesInfo.Uses[ident]
+	if obj == nil {
+		return false
+	}
+
+	pkg := obj.Pkg()
+	if pkg == nil {
+		return false
+	}
+
+	return pkg.Path() == "go.uber.org/zap"
 }
