@@ -7,11 +7,9 @@ func F() {
 	// RULE 1 - starts with lowercase letter
 	// -----------------------------------
 
-	// want "log message should start with a lowercase letter"
-	slog.Info("Starting server on port 8080")
+	slog.Info("Starting server on port 8080") // want "log message should start with a lowercase letter"
 
-	// want "log message should start with a lowercase letter"
-	slog.Error("Failed to connect to database")
+	slog.Error("Failed to connect to database") // want "log message should start with a lowercase letter"
 
 	// ok
 	slog.Info("starting server on port 8080")
@@ -21,11 +19,9 @@ func F() {
 	// RULE 2 - contains non english letters
 	// -----------------------------------
 
-	// want "log message must be in English"
-	slog.Info("запуск сервера")
+	slog.Info("запуск сервера") // want "log message must be in English"
 
-	// want "log message must be in English"
-	slog.Error("ошибка подключения к базе данных")
+	slog.Error("ошибка подключения к базе данных") // want "log message must be in English"
 
 	// ok
 	slog.Info("starting server")
@@ -35,14 +31,11 @@ func F() {
 	// RULE 3 - contains special symbols or emoji
 	// -----------------------------------
 
-	// want "log message contains special symbols or emoji"
-	slog.Info("server started 🚀")
+	slog.Info("server started 🚀") // want "log message contains special symbols or emoji"
 
-	// want "log message contains special symbols or emoji"
-	slog.Error("connection failed!!!")
+	slog.Error("connection failed!!!") // want "log message contains special symbols or emoji"
 
-	// want "log message contains special symbols or emoji"
-	slog.Warn("warning: something went wrong...")
+	slog.Warn("warning: something went wrong...") // want "log message contains special symbols or emoji"
 
 	// ok
 	slog.Info("server started")
@@ -57,14 +50,11 @@ func F() {
 	apiKey := "api-key"
 	token := "token"
 
-	// want "log message contains potentially sensitive data"
-	slog.Info("user password:" + password)
+	slog.Info("user password:" + password) // want "log message contains potentially sensitive data"
 
-	// want "log message contains potentially sensitive data"
-	slog.Debug("api_key=" + apiKey)
+	slog.Debug("api_key=" + apiKey) // want "log message contains potentially sensitive data"
 
-	// want "log message contains potentially sensitive data"
-	slog.Info("token:" + token)
+	slog.Info("token:" + token) // want "log message contains potentially sensitive data"
 
 	// ok
 	slog.Info("user authenticated successfully")
