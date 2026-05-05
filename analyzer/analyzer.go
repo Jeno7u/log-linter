@@ -3,6 +3,7 @@ package analyzer
 import (
 	"go/ast"
 	"go/token"
+	"strconv"
 
 	"golang.org/x/tools/go/analysis"
 )
@@ -22,10 +23,7 @@ func run(pass *analysis.Pass) (interface{}, error) {
 				return true
 			}
 
-			// получаем имя вызываемой функции
-			funcName := getFuncName(call)
-
-			// фильтруем только нужные нам логгеры
+			//
 			if !isLoggerCall(pass, call) {
 				return true
 			}
@@ -40,7 +38,25 @@ func run(pass *analysis.Pass) (interface{}, error) {
 				return true
 			}
 
-			pass.Reportf(call.Pos(), "log message: %s", msg)
+			// rule 1: should start with lowercase letter
+			if !isStringNonEmpty(msg) || !firstLetterIsLowercase(msg) {
+				pass.Reportf(call.Pos(), "log message should start with a lowercase letter: %s", msg)
+			}
+
+			// rule 2: only english
+			if isStringContainsNonEnglish(msg) {
+				pass.Reportf(call.Pos(), "log message contains letters that are non english: %s", msg)
+			}
+
+			// rule 3: no special symbols or emojis
+			if containsSpecialSymbolsOrEmojis(msg) {
+				pass.Reportf(call.Pos(), "log message contains special symbols or emoji: %s", msg)
+			}
+
+			// rule 4: no sensitive data
+			if containsSensitive(msg) {
+				pass.Reportf(call.Pos(), "log message contains potentially sensitive data: %s", msg)
+			}
 
 			return true
 		})
@@ -78,7 +94,13 @@ func getString(expr ast.Expr) (string, bool) {
 		return "", false
 	}
 
-	return lit.Value, true
+	// lit.Value includes surrounding quotes (`"..."` or ` `...` `).
+	s, err := strconv.Unquote(lit.Value)
+	if err != nil {
+		return "", false
+	}
+
+	return s, true
 }
 
 // проверяем, вызов ли это "log/slog"
