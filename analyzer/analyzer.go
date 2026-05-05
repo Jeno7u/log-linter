@@ -2,8 +2,6 @@ package analyzer
 
 import (
 	"go/ast"
-	"go/token"
-	"strconv"
 
 	"golang.org/x/tools/go/analysis"
 )
@@ -35,27 +33,59 @@ func run(pass *analysis.Pass) (interface{}, error) {
 
 			msg, ok := getString(call.Args[0])
 			if !ok {
+				// not a basic literal: extract literal operands from concatenation
+				lits := collectStringLiterals(call.Args[0])
+				if len(lits) > 0 {
+					// rule 1: starts with lowercase letter
+					if !literalsFirstLetterIsLowercase(lits) {
+						pass.Reportf(call.Pos(), "log message should start with a lowercase letter")
+						return true
+					}
+
+					// rule 2: string should not contain non english letters
+					if literalsContainNonEnglish(lits) {
+						pass.Reportf(call.Pos(), "log message must be in English")
+						return true
+					}
+
+					// rule 4: string should not contain potentially sensitive data
+					if literalsContainSensitive(lits) {
+						pass.Reportf(call.Pos(), "log message contains potentially sensitive data")
+						return true
+					}
+
+					// rule 3: strign should not contain special symbols or emoji
+					if literalsContainSpecial(lits) {
+						pass.Reportf(call.Pos(), "log message contains special symbols or emoji")
+						return true
+					}
+				}
+
 				return true
 			}
 
-			// rule 1: should start with lowercase letter
-			if !isStringNonEmpty(msg) || !firstLetterIsLowercase(msg) {
+			// rule 1: starts with lowercase letter
+			if !startsWithLowercaseLetter(msg) {
 				pass.Reportf(call.Pos(), "log message should start with a lowercase letter")
+				return true
 			}
 
-			// rule 2: only english
+			// rule 2: string should not contain non english letters
 			if isStringContainsNonEnglish(msg) {
 				pass.Reportf(call.Pos(), "log message must be in English")
+				return true
 			}
 
-			// rule 3: no special symbols or emojis
-			if containsSpecialSymbolsOrEmojis(msg) {
-				pass.Reportf(call.Pos(), "log message contains special symbols or emoji")
-			}
-
-			// rule 4: no sensitive data
+			// rule 4: string should not contain potentially sensitive data
 			if containsSensitive(msg) {
 				pass.Reportf(call.Pos(), "log message contains potentially sensitive data")
+				return true
+			}
+
+			// rule 3: strign should not contain special symbols or emoji
+			if containsSpecialSymbolsOrEmojis(msg) {
+				pass.Reportf(call.Pos(), "log message contains special symbols or emoji")
+				return true
 			}
 
 			return true
@@ -78,93 +108,4 @@ func isLoggerCall(pass *analysis.Pass, call *ast.CallExpr) bool {
 	}
 
 	return false
-}
-
-func getString(expr ast.Expr) (string, bool) {
-	lit, ok := expr.(*ast.BasicLit)
-	if !ok {
-		return "", false
-	}
-
-	if lit.Kind != token.STRING {
-		return "", false
-	}
-
-	// lit.Value includes surrounding quotes (`"..."` or ` `...` `).
-	s, err := strconv.Unquote(lit.Value)
-	if err != nil {
-		return "", false
-	}
-
-	return s, true
-}
-
-// checking is this call by "log/slog"
-func isSlogCall(pass *analysis.Pass, call *ast.CallExpr) bool {
-	sel, ok := call.Fun.(*ast.SelectorExpr)
-	if !ok {
-		return false
-	}
-
-	ident, ok := sel.X.(*ast.Ident)
-	if !ok {
-		return false
-	}
-
-	obj := pass.TypesInfo.Uses[ident]
-	if obj == nil {
-		return false
-	}
-
-	pkg := obj.Pkg()
-	if pkg == nil {
-		return false
-	}
-
-	return pkg.Path() == "log/slog"
-}
-
-func getFuncName(call *ast.CallExpr) string {
-	switch fun := call.Fun.(type) {
-	case *ast.SelectorExpr:
-		return fun.Sel.Name
-	case *ast.Ident:
-		return fun.Name
-	}
-	return ""
-}
-
-// checking is this call by "go.uber.org/zap"
-func isZapCall(pass *analysis.Pass, call *ast.CallExpr) bool {
-	sel, ok := call.Fun.(*ast.SelectorExpr)
-	if !ok {
-		return false
-	}
-
-	innerCall, ok := sel.X.(*ast.CallExpr)
-	if !ok {
-		return false
-	}
-
-	innerSel, ok := innerCall.Fun.(*ast.SelectorExpr)
-	if !ok {
-		return false
-	}
-
-	ident, ok := innerSel.X.(*ast.Ident)
-	if !ok {
-		return false
-	}
-
-	obj := pass.TypesInfo.Uses[ident]
-	if obj == nil {
-		return false
-	}
-
-	pkg := obj.Pkg()
-	if pkg == nil {
-		return false
-	}
-
-	return pkg.Path() == "go.uber.org/zap"
 }
