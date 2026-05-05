@@ -1,5 +1,4 @@
 package a
-package a
 
 import "log/slog"
 
@@ -21,5 +20,6 @@ func F() {
 
 	// should warn: sensitive data
 	// want "log message contains potentially sensitive data"
-	slog.Info("user password: secret")
+	password := "password"
+	slog.Info("user password: " + password)
 }

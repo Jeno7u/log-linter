@@ -65,21 +65,6 @@ func run(pass *analysis.Pass) (interface{}, error) {
 	return nil, nil
 }
 
-func getFuncName(call *ast.CallExpr) string {
-	switch fun := call.Fun.(type) {
-
-	case *ast.SelectorExpr:
-		// slog.Info или logger.Info
-		return fun.Sel.Name
-
-	case *ast.Ident:
-		// Println
-		return fun.Name
-	}
-
-	return ""
-}
-
 func isLoggerCall(pass *analysis.Pass, call *ast.CallExpr) bool {
 	return isSlogCall(pass, call) || isZapCall(pass, call)
 }

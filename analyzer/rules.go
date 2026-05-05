@@ -27,7 +27,7 @@ func firstLetterIsLowercase(s string) bool {
 // returns true if the string contains letters that are lowercase english
 func isStringContainsNonEnglish(s string) bool {
 	for _, r := range s {
-		if unicode.IsLetter(r) && !((r >= 'a' && r <= 'z') || (r >= 'A' && r <= 'Z')) {
+		if unicode.IsLetter(r) && !isEnglishLetter(r) {
 			return false
 		}
 	}
@@ -38,7 +38,7 @@ func isStringContainsNonEnglish(s string) bool {
 // returns true if string contains symbols distinct from numbers
 func containsSpecialSymbolsOrEmojis(s string) bool {
 	for _, r := range s {
-		if !unicode.IsLetter(r) && !(r >= '0' && r <= '9') {
+		if !unicode.IsLetter(r) && !isNumber(r) {
 			return false
 		}
 	}
@@ -55,4 +55,14 @@ func containsSensitive(s string) bool {
 		}
 	}
 	return false
+}
+
+// returns true if given rune is english letter
+func isEnglishLetter(r rune) bool {
+	return (r < 'a' || r > 'z') && (r < 'A' || r > 'Z')
+}
+
+// returns true if gived rune is number
+func isNumber(r rune) bool {
+	return r >= '0' && r <= '9'
 }
