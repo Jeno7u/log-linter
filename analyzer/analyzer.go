@@ -23,12 +23,12 @@ func run(pass *analysis.Pass) (interface{}, error) {
 				return true
 			}
 
-			//
+			// checking that call is by logger
 			if !isLoggerCall(pass, call) {
 				return true
 			}
 
-			// достаём первый аргумент
+			// taking first argument
 			if len(call.Args) == 0 {
 				return true
 			}
@@ -88,7 +88,7 @@ func getString(expr ast.Expr) (string, bool) {
 	return s, true
 }
 
-// проверяем, вызов ли это "log/slog"
+// checking is this call by "log/slog"
 func isSlogCall(pass *analysis.Pass, call *ast.CallExpr) bool {
 	sel, ok := call.Fun.(*ast.SelectorExpr)
 	if !ok {
@@ -113,14 +113,13 @@ func isSlogCall(pass *analysis.Pass, call *ast.CallExpr) bool {
 	return pkg.Path() == "log/slog"
 }
 
-// проверяем, вызов ли это "go.uber.org/zap"
+// checking is this call by "go.uber.org/zap"
 func isZapCall(pass *analysis.Pass, call *ast.CallExpr) bool {
 	sel, ok := call.Fun.(*ast.SelectorExpr)
 	if !ok {
 		return false
 	}
 
-	// zap.L().Info → sel.X это CallExpr
 	innerCall, ok := sel.X.(*ast.CallExpr)
 	if !ok {
 		return false

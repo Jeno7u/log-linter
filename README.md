@@ -1,0 +1,1 @@
+if first argument is variable, not string, linter will pass
