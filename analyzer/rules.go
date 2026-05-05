@@ -5,64 +5,87 @@ import (
 	"unicode"
 )
 
-var sensitiveKeywords = []string{
-	"password", "pwd", "token", "api_key", "apikey", "secret", "ssn", "creditcard", "card_number",
-}
-
-// return true if string is non empty
-func isStringNonEmpty(s string) bool {
-	return len(s) == 0
-}
-
-// checks that first letter in string is lowercase english. if empty returns false
-func firstLetterIsLowercase(s string) bool {
+// checks that string is started with lowercase english letter. if empty returns false
+func startsWithLowercaseLetter(s string) bool {
 	for _, r := range s {
 		return unicode.IsLetter(r) && unicode.IsLower(r)
 	}
 
-	// if string is empty
-	return true
+	return false
 }
 
-// returns true if the string contains letters that are lowercase english
+// returns true if the string contains letters that are not english
 func isStringContainsNonEnglish(s string) bool {
 	for _, r := range s {
 		if unicode.IsLetter(r) && !isEnglishLetter(r) {
-			return false
+			return true
 		}
 	}
 
-	return true
+	return false
 }
 
 // returns true if string contains symbols distinct from numbers
 func containsSpecialSymbolsOrEmojis(s string) bool {
 	for _, r := range s {
+		if r == ' ' {
+			continue
+		}
+
 		if !unicode.IsLetter(r) && !isNumber(r) {
-			return false
+			return true
 		}
 	}
 
-	return true
+	return false
 }
 
 // containsSensitive returns true if any sensitive keyword appears in the message (case-insensitive).
 func containsSensitive(s string) bool {
 	low := strings.ToLower(s)
 	for _, k := range sensitiveKeywords {
-		if strings.Contains(low, k) {
+		// flag only when keyword is followed by ':' or '=' to avoid false positives
+		if strings.Contains(low, k+":") || strings.Contains(low, k+"=") {
 			return true
 		}
 	}
 	return false
 }
 
-// returns true if given rune is english letter
-func isEnglishLetter(r rune) bool {
-	return (r < 'a' || r > 'z') && (r < 'A' || r > 'Z')
+func literalsFirstLetterIsLowercase(lits []string) bool {
+	for _, s := range lits {
+		for _, r := range s {
+			if unicode.IsLetter(r) {
+				return unicode.IsLower(r)
+			}
+		}
+	}
+	return true
 }
 
-// returns true if gived rune is number
-func isNumber(r rune) bool {
-	return r >= '0' && r <= '9'
+func literalsContainNonEnglish(lits []string) bool {
+	for _, s := range lits {
+		if isStringContainsNonEnglish(s) {
+			return true
+		}
+	}
+	return false
+}
+
+func literalsContainSpecial(lits []string) bool {
+	for _, s := range lits {
+		if containsSpecialSymbolsOrEmojis(s) {
+			return true
+		}
+	}
+	return false
+}
+
+func literalsContainSensitive(lits []string) bool {
+	for _, s := range lits {
+		if containsSensitive(s) {
+			return true
+		}
+	}
+	return false
 }
