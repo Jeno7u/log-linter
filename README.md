@@ -1,4 +1,4 @@
-# Log Linter
+# Log-Linter (loglint)
 A Go analyzer for checking log message rules.
 
 ---
@@ -22,6 +22,32 @@ Run all tests:
 
 ```bash
 go test ./...
+```
+
+---
+
+## Use Cases
+
+- Check log messages in Go services before they reach production.
+- Keep `log/slog` and `go.uber.org/zap` messages consistent.
+- Catch log messages that start with uppercase letters.
+- Catch non-English text, emoji, special symbols, and sensitive keywords.
+
+Example:
+
+```go
+import (
+  "log/slog"
+
+  "go.uber.org/zap"
+)
+
+func main() {
+  slog.Info("Starting server")      // bad
+  slog.Info("starting server")      // ok
+  zap.L().Error("password: 123456") // bad
+  zap.L().Info("server started")    // ok
+}
 ```
 
 ---
