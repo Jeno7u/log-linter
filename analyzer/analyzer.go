@@ -95,6 +95,7 @@ func run(pass *analysis.Pass) (interface{}, error) {
 	return nil, nil
 }
 
+// checks is call was by slog or zap logger
 func isLoggerCall(pass *analysis.Pass, call *ast.CallExpr) bool {
 	return isSlogCall(pass, call) || isZapCall(pass, call)
 }
