@@ -76,9 +76,9 @@ linters:
 
 3. **Add/Copy `.env`** to the target project root (optional):
 
-The generated `loglint` binary reads `.env` file at runtime. 
+The generated `loglint` binary reads `.env` files at runtime.
 
-.env file file should be in the same folder or in parent folder.
+The `.env` file should be in the project root or in a parent folder.
 
 ```bash
 LOGLINT_RULE_LOWERCASE_START=true
@@ -124,16 +124,19 @@ To make it permanent on Windows, add the `bin` folder to your user `PATH` in Env
 
 - **GitHub Actions**: `.github/workflows/ci.yml`
 
-It is doing next things:
+Workflow does the following:
 
 1. run `go test ./...`
 2. build the custom `loglint` binary with `golangci-lint custom`
-3. Check that `loglint` binary present
 
 ---
 
 ## Notes
 
-1. Could be analyzer folder files broken into multiple folders but there is no much files, so it should be ok
+- The binary name comes from `.custom-gcl.yml` and is set to `loglint`.
 
-2. 
+- Module plugin mode was chosen because it is the recommended approach for golangci-lint custom linters and avoids some problems of Go `.plugin system.
+
+- The analyzer can be extended later with `SuggestedFixes`, custom sensitive-data patterns, or a standalone multichecker binary if needed.
+
+- Analyzer folder structure can be slightly refactored but there are not much files to worry about
