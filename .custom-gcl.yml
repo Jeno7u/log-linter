@@ -1,0 +1,7 @@
+version: v2.12.1
+name: loglint
+destination: ./bin
+plugins:
+    - module: "github.com/Jeno7u/log-linter"
+      import: "github.com/Jeno7u/log-linter/plugin"
+      path: .
