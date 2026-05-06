@@ -1,5 +1,9 @@
 version: 2
-
 linters:
     enable:
         - loglint
+    settings:
+        custom:
+            loglint:
+                type: module
+                description: Log message rules for slog and zap
