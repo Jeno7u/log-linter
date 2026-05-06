@@ -59,6 +59,7 @@ func TestContainsSpecialSymbolsOrEmojis(t *testing.T) {
 }
 
 func TestContainsSensitive(t *testing.T) {
+	keywords := []string{"password", "token", "api_key", "apikey", "secret"}
 	cases := []struct {
 		in   string
 		want bool
@@ -69,9 +70,16 @@ func TestContainsSensitive(t *testing.T) {
 		{"user authenticated successfully", false},
 	}
 	for _, c := range cases {
-		got := containsSensitive(c.in)
+		got := containsSensitive(c.in, keywords)
 		if got != c.want {
 			t.Fatalf("containsSensitive(%q) = %v; want %v", c.in, got, c.want)
 		}
+	}
+}
+
+func TestContainsSensitiveWithCustomKeywords(t *testing.T) {
+	got := containsSensitive("build-id: 123", []string{"build-id"})
+	if !got {
+		t.Fatalf("containsSensitive with custom keywords = %v; want true", got)
 	}
 }
