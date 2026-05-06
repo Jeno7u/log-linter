@@ -52,27 +52,15 @@ func main() {
 
 ---
 
-## Build Custom `golangci-lint`
+## Use in Projects
 
-This project is used as a `golangci-lint` module plugin.
-
-1. **Build the custom binary** from the repository root:
+1. **Build `loglint`** from this repository root:
 
 ```bash
 golangci-lint custom
 ```
 
-2. **Check the generated binary**:
-
-```bash
-./bin/loglint version
-```
-
----
-
-## Use in Another Project
-
-1. **Add `.golangci.yml`** to the target project:
+2. **Add `.golangci.yml`** to the target project:
 
 ```yaml
 version: 2
@@ -86,7 +74,11 @@ linters:
         description: Log message rules for slog and zap
 ```
 
-2. **Add/Copy `.env`** to the target project root (optional):
+3. **Add/Copy `.env`** to the target project root (optional):
+
+The generated `loglint` binary reads `.env` file at runtime. 
+
+.env file file should be in the same folder or in parent folder.
 
 ```bash
 LOGLINT_RULE_LOWERCASE_START=true
@@ -98,7 +90,7 @@ LOGLINT_SENSITIVE_KEYWORDS=password token api_key apikey secret
 
 All rules are enabled by default. Set any rule to `false` if you want to disable it. Sensitive keywords are split by spaces.
 
-3. **Run `loglint`** from the target project root:
+4. **Run `loglint`** from the target project root:
 
 ```bash
 path/to/loglint run ./...
@@ -128,8 +120,20 @@ To make it permanent on Windows, add the `bin` folder to your user `PATH` in Env
 
 ---
 
+## CI/CD
+
+- **GitHub Actions**: `.github/workflows/ci.yml`
+
+It is doing next things:
+
+1. run `go test ./...`
+2. build the custom `loglint` binary with `golangci-lint custom`
+3. Check that `loglint` binary present
+
+---
+
 ## Notes
 
-1. Could be analyzer/ files broken in multiples folders but there is no much files, so it should be ok
+1. Could be analyzer folder files broken into multiple folders but there is no much files, so it should be ok
 
 2. 
