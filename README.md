@@ -86,7 +86,19 @@ linters:
         description: Log message rules for slog and zap
 ```
 
-2. **Run `loglint`** from the target project root:
+2. **Add/Copy `.env`** to the target project root (optional):
+
+```bash
+LOGLINT_RULE_LOWERCASE_START=true
+LOGLINT_RULE_ENGLISH_ONLY=true
+LOGLINT_RULE_SPECIAL_SYMBOLS=true
+LOGLINT_RULE_SENSITIVE_DATA=true
+LOGLINT_SENSITIVE_KEYWORDS=password token api_key apikey secret
+```
+
+All rules are enabled by default. Set any rule to `false` if you want to disable it. Sensitive keywords are split by spaces.
+
+3. **Run `loglint`** from the target project root:
 
 ```bash
 path/to/loglint run ./...
@@ -113,3 +125,11 @@ $env:Path = "$(Get-Location)\bin;" + $env:Path
 ```
 
 To make it permanent on Windows, add the `bin` folder to your user `PATH` in Environment Variables.
+
+---
+
+## Notes
+
+1. Could be analyzer/ files broken in multiples folders but there is no much files, so it should be ok
+
+2. 

@@ -6,13 +6,23 @@ import (
 	"golang.org/x/tools/go/analysis"
 )
 
-var Analyzer = &analysis.Analyzer{
-	Name: "loglint",
-	Doc:  "checks log messages",
-	Run:  run,
+var Analyzer = New()
+
+// New creates a loglint analyzer with the provided settings.
+func New() *analysis.Analyzer {
+	settings := LoadSettings()
+
+	return &analysis.Analyzer{
+		Name: "loglint",
+		Doc:  "checks log messages",
+		Run: func(pass *analysis.Pass) (interface{}, error) {
+			return run(pass, settings)
+		},
+	}
 }
 
-func run(pass *analysis.Pass) (interface{}, error) {
+func run(pass *analysis.Pass, settings Settings) (interface{}, error) {
+
 	for _, file := range pass.Files {
 
 		ast.Inspect(file, func(n ast.Node) bool {
@@ -37,25 +47,25 @@ func run(pass *analysis.Pass) (interface{}, error) {
 				lits := collectStringLiterals(call.Args[0])
 				if len(lits) > 0 {
 					// rule 1: starts with lowercase letter
-					if !literalsFirstLetterIsLowercase(lits) {
+					if settings.LowercaseStart && !literalsFirstLetterIsLowercase(lits) {
 						pass.Reportf(call.Pos(), "log message should start with a lowercase letter")
 						return true
 					}
 
 					// rule 2: string should not contain non english letters
-					if literalsContainNonEnglish(lits) {
+					if settings.EnglishOnly && literalsContainNonEnglish(lits) {
 						pass.Reportf(call.Pos(), "log message must be in English")
 						return true
 					}
 
 					// rule 4: string should not contain potentially sensitive data
-					if literalsContainSensitive(lits) {
+					if settings.SensitiveData && literalsContainSensitive(lits, settings.SensitiveKeywords) {
 						pass.Reportf(call.Pos(), "log message contains potentially sensitive data")
 						return true
 					}
 
 					// rule 3: strign should not contain special symbols or emoji
-					if literalsContainSpecial(lits) {
+					if settings.SpecialSymbols && literalsContainSpecial(lits) {
 						pass.Reportf(call.Pos(), "log message contains special symbols or emoji")
 						return true
 					}
@@ -65,25 +75,25 @@ func run(pass *analysis.Pass) (interface{}, error) {
 			}
 
 			// rule 1: starts with lowercase letter
-			if !startsWithLowercaseLetter(msg) {
+			if settings.LowercaseStart && !startsWithLowercaseLetter(msg) {
 				pass.Reportf(call.Pos(), "log message should start with a lowercase letter")
 				return true
 			}
 
 			// rule 2: string should not contain non english letters
-			if isStringContainsNonEnglish(msg) {
+			if settings.EnglishOnly && isStringContainsNonEnglish(msg) {
 				pass.Reportf(call.Pos(), "log message must be in English")
 				return true
 			}
 
 			// rule 4: string should not contain potentially sensitive data
-			if containsSensitive(msg) {
+			if settings.SensitiveData && containsSensitive(msg, settings.SensitiveKeywords) {
 				pass.Reportf(call.Pos(), "log message contains potentially sensitive data")
 				return true
 			}
 
 			// rule 3: strign should not contain special symbols or emoji
-			if containsSpecialSymbolsOrEmojis(msg) {
+			if settings.SpecialSymbols && containsSpecialSymbolsOrEmojis(msg) {
 				pass.Reportf(call.Pos(), "log message contains special symbols or emoji")
 				return true
 			}

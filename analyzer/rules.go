@@ -41,9 +41,9 @@ func containsSpecialSymbolsOrEmojis(s string) bool {
 }
 
 // containsSensitive returns true if any sensitive keyword appears in the message (case-insensitive).
-func containsSensitive(s string) bool {
+func containsSensitive(s string, keywords []string) bool {
 	low := strings.ToLower(s)
-	for _, k := range sensitiveKeywords {
+	for _, k := range keywords {
 		// flag only when keyword is followed by ':' or '=' to avoid false positives
 		if strings.Contains(low, k+":") || strings.Contains(low, k+"=") {
 			return true
@@ -81,9 +81,9 @@ func literalsContainSpecial(lits []string) bool {
 	return false
 }
 
-func literalsContainSensitive(lits []string) bool {
+func literalsContainSensitive(lits []string, keywords []string) bool {
 	for _, s := range lits {
-		if containsSensitive(s) {
+		if containsSensitive(s, keywords) {
 			return true
 		}
 	}

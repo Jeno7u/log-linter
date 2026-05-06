@@ -12,15 +12,17 @@ func init() {
 
 // creates the loglint plugin instance
 func New(conf any) (register.LinterPlugin, error) {
-	return &plugin{}, nil
+	return &plugin{analyzer: analyzer.New()}, nil
 }
 
 // plugin exposes the analyzer to golangci-lint
-type plugin struct{}
+type plugin struct {
+	analyzer *analysis.Analyzer
+}
 
 // returns the analyzers provided by this plugin
 func (p *plugin) BuildAnalyzers() ([]*analysis.Analyzer, error) {
-	return []*analysis.Analyzer{analyzer.Analyzer}, nil
+	return []*analysis.Analyzer{p.analyzer}, nil
 }
 
 // reports the load mode required by the analyzer

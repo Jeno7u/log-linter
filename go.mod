@@ -4,6 +4,7 @@ go 1.26.2
 
 require (
 	github.com/golangci/plugin-module-register v0.1.2
+	github.com/lpernett/godotenv v0.0.0-20230527005122-0de1d4c5ef5e
 	golang.org/x/tools v0.44.0
 )
 
