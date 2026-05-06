@@ -33,6 +33,17 @@ type Settings struct {
 	SensitiveKeywords []string
 }
 
+// DefaultSettings returns the strict default settings used when no explicit settings are provided.
+func DefaultSettings() Settings {
+	return Settings{
+		LowercaseStart:    true,
+		EnglishOnly:       true,
+		SpecialSymbols:    true,
+		SensitiveData:     true,
+		SensitiveKeywords: append([]string(nil), defaultSensitiveKeywords...),
+	}
+}
+
 // load settings from .env
 func LoadSettings() Settings {
 	loadEnvFiles()
@@ -42,7 +53,7 @@ func LoadSettings() Settings {
 		EnglishOnly:       getEnvAsBool(envRuleEnglishOnly, true),
 		SpecialSymbols:    getEnvAsBool(envRuleSpecialSymbols, true),
 		SensitiveData:     getEnvAsBool(envRuleSensitiveData, true),
-		SensitiveKeywords: getEnvAsStrings(envRuleEnglishOnly, defaultSensitiveKeywords),
+		SensitiveKeywords: getEnvAsStrings(envSensitiveKeywords, defaultSensitiveKeywords),
 	}
 
 	return settings

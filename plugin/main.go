@@ -12,7 +12,7 @@ func init() {
 
 // creates the loglint plugin instance
 func New(conf any) (register.LinterPlugin, error) {
-	return &plugin{analyzer: analyzer.New()}, nil
+	return &plugin{analyzer: analyzer.New(analyzer.LoadSettings())}, nil
 }
 
 // plugin exposes the analyzer to golangci-lint

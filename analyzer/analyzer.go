@@ -6,12 +6,10 @@ import (
 	"golang.org/x/tools/go/analysis"
 )
 
-var Analyzer = New()
+var Analyzer = New(DefaultSettings())
 
 // New creates a loglint analyzer with the provided settings.
-func New() *analysis.Analyzer {
-	settings := LoadSettings()
-
+func New(settings Settings) *analysis.Analyzer {
 	return &analysis.Analyzer{
 		Name: "loglint",
 		Doc:  "checks log messages",
@@ -22,7 +20,6 @@ func New() *analysis.Analyzer {
 }
 
 func run(pass *analysis.Pass, settings Settings) (interface{}, error) {
-
 	for _, file := range pass.Files {
 
 		ast.Inspect(file, func(n ast.Node) bool {
