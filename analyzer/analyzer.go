@@ -96,16 +96,5 @@ func run(pass *analysis.Pass) (interface{}, error) {
 }
 
 func isLoggerCall(pass *analysis.Pass, call *ast.CallExpr) bool {
-	if isSlogCall(pass, call) || isZapCall(pass, call) {
-		return true
-	}
-
-	// fallback: accept common logger method names so tests in testdata run
-	name := getFuncName(call)
-	switch name {
-	case "Info", "Error", "Warn", "Debug", "Infof", "Errorf", "Warnf", "Debugf":
-		return true
-	}
-
-	return false
+	return isSlogCall(pass, call) || isZapCall(pass, call)
 }

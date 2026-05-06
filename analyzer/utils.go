@@ -3,6 +3,7 @@ package analyzer
 import (
 	"go/ast"
 	"go/token"
+	"go/types"
 	"strconv"
 
 	"golang.org/x/tools/go/analysis"
@@ -95,7 +96,12 @@ func isSlogCall(pass *analysis.Pass, call *ast.CallExpr) bool {
 		return false
 	}
 
-	pkg := obj.Pkg()
+	pkgName, ok := obj.(*types.PkgName)
+	if !ok {
+		return false
+	}
+
+	pkg := pkgName.Imported()
 	if pkg == nil {
 		return false
 	}
@@ -130,7 +136,12 @@ func isZapCall(pass *analysis.Pass, call *ast.CallExpr) bool {
 		return false
 	}
 
-	pkg := obj.Pkg()
+	pkgName, ok := obj.(*types.PkgName)
+	if !ok {
+		return false
+	}
+
+	pkg := pkgName.Imported()
 	if pkg == nil {
 		return false
 	}
